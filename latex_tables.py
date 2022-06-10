@@ -135,6 +135,19 @@ class Table:
             self.__last_row = len(self.cells)
             self.cells += cells
 
+            # check for trailing multirow-cell
+            # note that such a row can only contain exactly one element
+            if isinstance(cells[-1][0], (tuple, list)):
+                shape = cells[-1][0][1]    # last row, first entry, shape is at indx 1
+                if len(shape) != 2:
+                    msg = ("Found a trailing multirow in Table.add_cells with "
+                           f" shape {shape} (should be ({shape[0]}, 1))")
+                    raise IndexError(msg)
+
+                num_trailing_rows = shape[0] - 1
+                for i in range(num_trailing_rows):
+                    self.cells.append([])
+
         elif pos == 'right':
             if isinstance(cells, np.ndarray):
                 cells = [list(row) for row in cells]

@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+
 def set_figsize(width=None, fraction=1, subplots=(1, 1)):
     """
     Copied from: https://jwalton.info/Embed-Publication-Matplotlib-Latex/
@@ -229,6 +230,52 @@ class Colors():
     def prev_color(self):
         cval = self.colors[(self.ctr - 1) % self.clength]
         return cval
+    
+
+def plot_colorbar(heat, cmap='viridis', orientation="horizontal", width=0.8, height=0.3,
+                  figsize=None, x0=None, y0=None, alpha=1.0, label=None):
+    """
+    Create a standalone colorbar based on a given 'heat'-array.
+    Main functionality from ::
+        https://stackoverflow.com/questions/16595138/standalone-colorbar-matplotlib
+    """
+    if orientation == "horizontal":
+        if figsize is None:
+            figsize = plt.rcParams["figure.figsize"]
+            figsize = (figsize[0], 0.2 * figsize[1])
+        if x0 is None:
+            x0 = 0.1
+        if y0 is None:
+            y0 = 0.5
+        if height > width:
+            print(f"Warning, {orientation = } but {width = } smaller than {height = }"
+                  "Values will be swapped automatically...")
+            width, height = height, width
+
+    elif orientation == "vertical":
+        if figsize is None:
+            figsize = plt.rcParams["figure.figsize"]
+            figsize = (0.15 * figsize[0], figsize[1])
+        if x0 is None:
+            x0 = 0.2
+        if y0 is None:
+            y0 = 0.1
+        if width > height:
+            print(f"Warning, {orientation = } but {height = } smaller than {width = }"
+                  "\nValues will be swapped automatically...")
+            width, height = height, width
+
+    plt.figure(figsize=figsize)
+    plt.imshow(heat, cmap=cmap, alpha=alpha)
+    plt.gca().set_visible(False)
+    cax = plt.axes([x0, y0, width, height])
+    plt.colorbar(orientation=orientation, cax=cax, alpha=alpha, label=label)
+    plt.show()
+
+
+###############################################################################
+# Routines for embedding the axis-labels into the axis-ticks
+###############################################################################
 
 
 def set_ticks_linear(ax, vmin, vmax, numticks, decimals=7, axis='x'):
@@ -555,6 +602,7 @@ def multiple_formatter(denominator=2, number=np.pi, latex=r'\pi'):
 
     return _multiple_formatter
 
+
 class Multiple:
     def __init__(self, denominator=2, number=np.pi, latex=r'\pi'):
         self.denominator = denominator
@@ -567,6 +615,7 @@ class Multiple:
     def formatter(self):
         return plt.FuncFormatter(
             multiple_formatter(self.denominator, self.number, self.latex))
+
 
 def format_ticklabels(ax, axis='x', major_den=2, minor_den=12,
                       number=np.pi, latex=r'\pi'):

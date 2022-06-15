@@ -109,7 +109,7 @@ class HeatTable:
 class Table:
     """Provides methods for creating simple rectangular latex tables"""
     def __init__(self, cells):
-        self.cells = cells
+        self.cells = self.__tolist(cells)
         self.__last_row = 0     # index of the last row that was added
         self.num_cols = 0       # number of columns in the table
 
@@ -120,16 +120,25 @@ class Table:
         self.hlines = []        # boolean array for \cline{}'s
 
 
+    def __tolist(self, cells):
+        """Convert a numpy array to a list (passes if given a list)"""
+        if isinstance(cells, np.ndarray):
+            return cells.tolist()
+        return cells
+
+
     def add_cells(self, cells, pos='below'):
         """Add cells at the specified position 'pos' relative to the existing 'Table'.
         'cells' must be a nested 2D-list, where entires may be arbitrary 'cell-entries'.
         """
         if pos not in ['below', 'right']:
-            m = f"Position was {pos = } but must be one of {'below', 'right'}."
-            raise ValueError(m)
+            msg = f"Position was {pos = } but must be one of {'below', 'right'}."
+            raise ValueError(msg)
 
         if isinstance(cells, (HeatTable, self.__class__)):
             cells = cells.l_cells
+        else:
+            cells = self.__tolist(cells)
 
         if pos == 'below':
             self.__last_row = len(self.cells)
@@ -158,6 +167,7 @@ class Table:
 
 
     def __shape_ident_from_elem(self, elem, j):
+        """Return the shape and the identifier for a given multicell"""
         shape = elem[1]
 
         # identifier for multicolumn alignment and border
@@ -183,6 +193,7 @@ class Table:
 
 
     def __get_num_cols(self):
+        """Compute the number of column in the table (respects multicells)"""
         num_cols = 0
         for elem in self.cells[0]:
             if isinstance(elem, (tuple, list)):

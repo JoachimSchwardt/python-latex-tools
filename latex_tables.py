@@ -57,14 +57,39 @@ def rgb2cmyk(rgb):
 class HeatTable:
     """Special table supporting latex-cells with background colors based on a heatmap.
     """
-    def __init__(self, cells, heat, colormap='viridis', mode='rgb', AutoSetup=True, alpha=None):
+    def __init__(self, cells, heat, colormap='viridis', mode='rgb', 
+                 AutoSetup=True, RescaleHeat=True, alpha=None):
         """Initialize cells and heatmap. If 'AutoSetup', this also generates the table.
         """
         self.cells = cells
         self.heat = heat
+        if RescaleHeat:
+            self.__rescale_heat()
 
         if AutoSetup:
             self.setup(colormap, mode, alpha=alpha)
+
+
+    def __validate_input(self):
+        """Check the dimension and type of the input"""
+        if not isinstance(self.cells, np.ndarray):
+            self.cells = np.array(self.cells)
+
+        if self.cells.ndim == 1:
+            print(f"Warning: 'cells' is of shape {self.cells.shape} which will be converted to "
+                  f"the shape (1,{self.cells.size})!")
+            self.cells = np.expand_dims(self.cells, axis=0)
+        elif self.cells.ndim == 3:
+            if np.any(self.cells.shape == 1):
+                print(f"Warning: 'cells' is of shape {self.cells.shape} which will be converted to")
+
+
+    def __rescale_heat(self):
+        """Rescale the heat to the [0, 1]-range for correct colormapping."""
+        indx = ~np.isnan(self.heat)
+        hmin, hmax = np.min(self.heat[indx]), np.max(self.heat[indx])
+        self.heat = (self.heat - hmin) / (hmax - hmin)
+
 
     def setup(self, colormap='viridis', mode='rgb', alpha=None):
         """Setup the colors of each cell according to the given 'heat'-array."""
@@ -362,6 +387,15 @@ def main():
         ])
     table.add_cells([[['2 Spatial Streams', (1,-1)]]])
 
+    table.create_table()
+    print(table)
+    
+    # example for a heat table
+    table = Table([[i for i in range(5)]])
+    heat = np.round(np.random.uniform(0.0, 0.1, size=(10,5)), 3)
+    heat[3, 2:] = np.nan
+    heat_table = HeatTable(heat, heat)
+    table.add_cells(heat_table)
     table.create_table()
     print(table)
     return 0

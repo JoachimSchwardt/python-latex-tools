@@ -79,7 +79,7 @@ LEGEND_EDGECOLOR = plt.rcParams["axes.facecolor"]   # edge color of the bounding
 
 # axes and tick defaults
 AXIS_LINEWDITH = 1.0              # axes linewidth (1.2)
-AXIS_LABELSIZE = 8                # label size
+AXIS_LABELSIZE = 10               # label size
 TICK_LABELSIZE = 8                # tick label size
 MAJORSIZE = 3.5                   # size of major ticks (6.0)
 MAJORWIDTH = 1.0                  # width of major ticks (1.2)
